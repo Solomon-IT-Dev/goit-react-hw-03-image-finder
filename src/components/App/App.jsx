@@ -1,22 +1,25 @@
 import React, { Component } from "react";
+import Modal from 'components/Modal';
 
 class App extends Component {
+  state = {
+    showModal: false,
+  };
 
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({
+      showModal: !showModal
+    }));
+  };
 
   render() {
+    const { showModal } = this.state;
+
     return (
-      <div
-        style={{
-          height: '100vh',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          fontSize: 40,
-          textTransform: 'uppercase',
-          color: '#010101',
-        }}
-      >
-        React homework template
+      <div>
+        <button type="button" onClick={this.toggleModal}>Open</button>
+
+        {showModal && <Modal onClose={this.toggleModal} />}
       </div>
     );
   };
