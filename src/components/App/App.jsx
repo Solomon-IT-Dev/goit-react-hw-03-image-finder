@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Modal from 'components/Modal';
+import { AppWrapper } from "./App.styled";
 
 class App extends Component {
   state = {
@@ -16,11 +17,11 @@ class App extends Component {
     const { showModal } = this.state;
 
     return (
-      <div>
+      <AppWrapper>
         <button type="button" onClick={this.toggleModal}>Open</button>
 
         {showModal && <Modal onClose={this.toggleModal} />}
-      </div>
+      </AppWrapper>
     );
   };
 };

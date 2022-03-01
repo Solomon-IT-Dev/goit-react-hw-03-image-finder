@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { createPortal } from "react-dom";
 import PropTypes from 'prop-types';
-import { ModalBackdrop, ModalContainer } from './Modal.styled';
+import { Overlay, ModalContainer } from './Modal.styled';
 
 const modalRoot = document.getElementById('modal-root');
 
@@ -28,12 +28,12 @@ class Modal extends Component {
 
     render() {
         return createPortal(
-            <ModalBackdrop onClick={this.onBackdropClick}>
+            <Overlay onClick={this.onBackdropClick}>
                 <ModalContainer>
                     <button type="button" onClick={this.props.onClose}>Close</button>
                     {/* <img src="" alt="" /> */}
                 </ModalContainer>
-            </ModalBackdrop>,
+            </Overlay>,
             modalRoot,
         );
     };
