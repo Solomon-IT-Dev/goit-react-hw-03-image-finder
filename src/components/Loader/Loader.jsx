@@ -6,7 +6,7 @@ export default function Loader() {
             height="80"
             width="80"
             color='grey'
-            ariaLabel='loading'
+            ariaLabel='Loading'
         />
     );
 };
