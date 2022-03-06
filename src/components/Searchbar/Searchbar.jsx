@@ -34,7 +34,7 @@ class Searchbar extends Component {
     };
 
     showSearchQueryAbsence = () => {
-        toast.warn('No, no, no! God, no! To search for pictures you need to specify what you are looking for.');
+        toast.warn("No, no, no! God, no! To search for pictures you need to specify what you are looking for.");
     };
 
     render() {

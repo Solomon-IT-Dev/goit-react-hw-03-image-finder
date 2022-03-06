@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import { createPortal } from "react-dom";
 import PropTypes from 'prop-types';
-import { Overlay, ModalContainer } from './Modal.styled';
+import { IconContext } from 'react-icons';
+import { MdClose } from 'react-icons/md';
+import { Overlay, ModalContainer, CloseButton, LargeImg } from './Modal.styled';
 
 const modalRoot = document.getElementById('modal-root');
 
@@ -27,11 +29,17 @@ class Modal extends Component {
     };
 
     render() {
+        const { largeImageURL, alt, onClose } = this.props;
+
         return createPortal(
             <Overlay onClick={this.onBackdropClick}>
                 <ModalContainer>
-                    <button type="button" onClick={this.props.onClose}>Close</button>
-                    {/* <img src="" alt="" /> */}
+                    <CloseButton type="button" onClick={onClose}>
+                        <IconContext.Provider value={{ size: "2.5em" }} >
+                            <MdClose />
+                        </IconContext.Provider>
+                    </CloseButton>
+                    <LargeImg src={largeImageURL} alt={alt} />
                 </ModalContainer>
             </Overlay>,
             modalRoot,
@@ -42,5 +50,7 @@ class Modal extends Component {
 export default Modal;
 
 Modal.propTypes = {
+    largeImageURL: PropTypes.string.isRequired,
+    alt: PropTypes.string.isRequired,
     onClose: PropTypes.func.isRequired,
 };

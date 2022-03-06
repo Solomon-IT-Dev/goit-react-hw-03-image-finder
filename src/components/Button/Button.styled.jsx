@@ -2,8 +2,9 @@ import styled from '@emotion/styled';
 
 export const LoadMoreBtn = styled.button`
   padding: 8px 16px;
+  margin: 24px auto 0 auto;
   border-radius: 2px;
-  background-color: #1d2671;
+  background-color: #0b486b;
   transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   display: inline-block;
@@ -23,6 +24,6 @@ export const LoadMoreBtn = styled.button`
 
   :hover,
   :focus {
-    background-color: #c33764;
+    background-color: #f56217;
   }
 `;

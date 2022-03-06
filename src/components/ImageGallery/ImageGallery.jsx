@@ -6,8 +6,7 @@ import ImageGalleryItem from 'components/ImageGalleryItem';
 import FrontNotification from "components/FrontNotification";
 import Modal from 'components/Modal';
 import Button from 'components/Button';
-// import Loader from 'components/Loader';
-// import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
+import Loader from 'components/Loader';
 import { GalleryList } from './ImageGallery.styled';
 
 const Status = {
@@ -22,68 +21,105 @@ class ImageGallery extends Component {
         imageSet: [],
         page: 1,
         totalImages: 0,
-        largeImageURl: '',
+        largeImageURL: '',
         showModal: false,
-        // loading: false,
         status: Status.IDLE,
     };
 
     componentDidUpdate(prevProps, prevState) {
         const prevQuery = prevProps.searchQuery;
         const nextQuery = this.props.searchQuery;
-        const { page } = this.state;
+        const prevPage = prevState.page;
+        const nextPage = this.state.page;
 
         if (prevQuery !== nextQuery) {
-            this.setState({ status: Status.PENDING }); // imageSet: null 
+            this.setState({ status: Status.PENDING });
 
-            const errorMessage = `no images available on query ${nextQuery}`;
+            findImages(nextQuery, nextPage)
+                .then(({ hits, total, totalHits }) => {
+                        console.log(hits);
+                        console.log(total);
+                        console.log(totalHits);
 
-            findImages(nextQuery, page, errorMessage)
-                .then(imageSet => this.setState({ imageSet, status: Status.RESOLVED }))
+                        this.setState({ imageSet: hits, totalImages: totalHits, status: Status.RESOLVED });
+                    })
                 .catch(error => {
                         this.setState({ status: Status.REJECTED })
                         this.showQueryError(error);
                         console.log(error);
                     })
-                // .finally(() => this.setState({ loading: false }));
         };
     };
 
-    toggleModal = () => {
-        this.setState(({ showModal }) => ({
-            showModal: !showModal
-        }));
+    showSearchResult = (totalImages) => {
+        toast.success(`Hooray! We found ${totalImages} images.`);
+    };
+
+    showGalleryEnd = () => {
+        toast.info("You've reached the end of search results.");
+    };
+
+    showIncorrectQuery = (searchQuery) => {
+        toast.error(`Sorry, there are no images matching your query: "${searchQuery}". Please try to search something else.`);
     };
 
     showQueryError = (error) => {
-        toast.error(`Oops! Something went wrong. You caught the following error: ${error.message}.`);
+        toast.error(`You caught the following error: ${error.message}.`);
+    };
+
+    toggleModal = (largeImageURL) => {
+        this.setState(({ showModal }) => ({
+            showModal: !showModal,
+            largeImageURL,
+        }));
+    };
+
+    onLoadBtnClick = () => {
+        const { totalImages, imageSet } = this.state;
+        if (totalImages > imageSet.length) {
+            this.setState(prevState => ({ page: prevState.page + 1}));
+        };
     };
 
     render() {
-        const { showModal, status } = this.state; // loading
+        const { imageSet, totalImages, largeImageURL, showModal, status } = this.state;
 
-        if (status === Status.IDLE) {
-            return <FrontNotification text='Type your image request in searchbar and get an awesome collection of pictures.' />
+        if (status === 'idle') {
+            return <FrontNotification text="Type your image request in searchbar and get an awesome collection of pictures." />
         };
          
-        if (status === Status.PENDING || status === Status.RESOLVED) {
+        if (status === 'pending') {
+            return <Loader />
+        };
+
+        if (status === 'resolved') {
             return (
                 <>
                     <GalleryList>
-                        <ImageGalleryItem />
-
+                        {imageSet.map(({ id, webformatURL, largeImageURL, tags }) => (
+                            <ImageGalleryItem
+                                key={id}
+                                webformatURL={webformatURL}
+                                largeImageURL={largeImageURL}
+                                alt={tags}
+                                onClick={this.toggleModal}
+                            />
+                        ))}
                     </GalleryList>
-                    <button type="button" onClick={this.toggleModal}>Open</button>
-                    {showModal && <Modal onClose={this.toggleModal} />}
+                    
+                    {showModal && <Modal
+                        largeImageURL={largeImageURL}
+                        alt={this.props.searchQuery}
+                        onClose={this.toggleModal}
+                    />}
 
-                    <Button />
-                    {/* {loading ? <Loader /> : <Button />} */}
+                    {(totalImages > imageSet.length) && <Button onClick={this.onLoadBtnClick} />}
                 </>
             );
         };
    
-        if (status === Status.REJECTED) {
-            return <FrontNotification text='Oops! Something went wrong.'/>
+        if (status === 'rejected') {
+            return <FrontNotification text="Oops! Something went wrong."/>
         }
     };
  
