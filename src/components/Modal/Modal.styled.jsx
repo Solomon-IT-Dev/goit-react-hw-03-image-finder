@@ -34,10 +34,10 @@ export const CloseButton = styled.button`
   :hover,
   :focus {
     color: #f56217;
-    background-color: #ffffffab;
+    background-color: #ffffffd6;
   }
 `;
 
 export const LargeImg = styled.img`
-  max-height: 720px;
+  max-height: 675px;
 `

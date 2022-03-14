@@ -18,7 +18,7 @@ const Status = {
 
 class ImageGallery extends Component {
     state = {
-        imageSet: [],
+        imagesSet: [],
         page: 1,
         totalImages: 0,
         largeImageURL: '',
@@ -33,30 +33,46 @@ class ImageGallery extends Component {
         const nextPage = this.state.page;
 
         if (prevQuery !== nextQuery) {
-            this.setState({ status: Status.PENDING });
+            this.setState({ imagesSet: [], page: 1, status: Status.PENDING });
+        };
 
+        if (prevQuery !== nextQuery || prevPage !== nextPage) {
             findImages(nextQuery, nextPage)
-                .then(({ hits, total, totalHits }) => {
-                        console.log(hits);
-                        console.log(total);
-                        console.log(totalHits);
+                .then(({ hits, totalHits }) => {
+                    if (nextPage === 1) {
+                        this.setState({ imagesSet: hits, totalImages: totalHits });
 
-                        this.setState({ imageSet: hits, totalImages: totalHits, status: Status.RESOLVED });
-                    })
+                        if (totalHits === 0) {
+                            this.setState({ status: Status.REJECTED });
+                            setTimeout(() => {
+                                this.setState({ status: Status.IDLE });
+                            }, 3000);
+                            return this.showIncorrectQuery(nextQuery);
+                        };
+
+                        if (totalHits !== 0) {
+                            this.setState({ status: Status.RESOLVED });
+                            return this.showSearchResult(totalHits);
+                        };
+                    } else {
+                        this.setState(prevState => ({ imagesSet: [...prevState.imagesSet, ...hits], status: Status.RESOLVED }));
+
+                        this.makeSmoothScroll();
+                    };
+                })
                 .catch(error => {
-                        this.setState({ status: Status.REJECTED })
-                        this.showQueryError(error);
-                        console.log(error);
-                    })
+                    console.log(error);
+                    this.setState({ status: Status.REJECTED });
+                    setTimeout(() => {
+                        this.setState({ status: Status.IDLE });
+                    }, 3000);
+                    return this.showQueryError(error);
+                })
         };
     };
 
     showSearchResult = (totalImages) => {
         toast.success(`Hooray! We found ${totalImages} images.`);
-    };
-
-    showGalleryEnd = () => {
-        toast.info("You've reached the end of search results.");
     };
 
     showIncorrectQuery = (searchQuery) => {
@@ -75,28 +91,34 @@ class ImageGallery extends Component {
     };
 
     onLoadBtnClick = () => {
-        const { totalImages, imageSet } = this.state;
-        if (totalImages > imageSet.length) {
-            this.setState(prevState => ({ page: prevState.page + 1}));
+        const { totalImages, imagesSet } = this.state;
+
+        if (totalImages > imagesSet.length) {
+            this.setState(prevState => ({ page: prevState.page + 1 }));
         };
     };
 
-    render() {
-        const { imageSet, totalImages, largeImageURL, showModal, status } = this.state;
+    makeSmoothScroll = () => {
+        const cardHeight = this.galleryElem.firstElementChild.clientHeight;
+        window.scrollBy({ top: cardHeight * 1.97, behavior: 'smooth' });
+    };
 
-        if (status === 'idle') {
+    render() {
+        const { imagesSet, totalImages, largeImageURL, showModal, status } = this.state;
+
+        if (status === Status.IDLE) {
             return <FrontNotification text="Type your image request in searchbar and get an awesome collection of pictures." />
         };
          
-        if (status === 'pending') {
+        if (status === Status.PENDING) {
             return <Loader />
         };
 
-        if (status === 'resolved') {
+        if (status === Status.RESOLVED) {
             return (
                 <>
-                    <GalleryList>
-                        {imageSet.map(({ id, webformatURL, largeImageURL, tags }) => (
+                    <GalleryList ref={(galleryList) => {this.galleryElem = galleryList}}>
+                        {imagesSet.map(({ id, webformatURL, largeImageURL, tags }) => (
                             <ImageGalleryItem
                                 key={id}
                                 webformatURL={webformatURL}
@@ -113,12 +135,12 @@ class ImageGallery extends Component {
                         onClose={this.toggleModal}
                     />}
 
-                    {(totalImages > imageSet.length) && <Button onClick={this.onLoadBtnClick} />}
+                    {(totalImages > imagesSet.length) && <Button onClick={this.onLoadBtnClick} />}
                 </>
             );
         };
    
-        if (status === 'rejected') {
+        if (status === Status.REJECTED) {
             return <FrontNotification text="Oops! Something went wrong."/>
         }
     };

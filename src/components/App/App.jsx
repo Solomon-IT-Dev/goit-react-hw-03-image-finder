@@ -22,7 +22,7 @@ class App extends Component {
       <AppWrapper>
         <Searchbar onSubmit={this.onFormSubmit} />
         <ImageGallery searchQuery={searchQuery} />
-        <ToastContainer autoClose={3000} />
+        <ToastContainer autoClose={4000} />
       </AppWrapper>
     );
   };
