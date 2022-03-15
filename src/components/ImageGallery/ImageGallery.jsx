@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 import ImageGalleryItem from 'components/ImageGalleryItem';
 import { GalleryList } from './ImageGallery.styled';
 
-export default function ImageGallery({ imagesSet, onClick }) {
+export default function ImageGallery({ imagesSet, onClick, scrollRef }) {
     return (
-        <GalleryList >
+        <GalleryList ref={scrollRef}>
             {imagesSet.map(({ id, webformatURL, largeImageURL, tags }) => (
                 <ImageGalleryItem
                     key={id}
@@ -21,6 +21,5 @@ export default function ImageGallery({ imagesSet, onClick }) {
 ImageGallery.propTypes = {
     imagesSet: PropTypes.array.isRequired,
     onClick: PropTypes.func.isRequired,
+    scrollRef: PropTypes.func.isRequired,
 };
-
-// ref={(galleryList) => { this.galleryElem = galleryList }}

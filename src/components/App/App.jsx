@@ -36,10 +36,6 @@ class App extends Component {
     const prevPage = prevState.page;
     const nextPage = this.state.page;
 
-    if (prevQuery !== nextQuery) {
-      this.setState({ imagesSet: [], page: 1, status: Status.PENDING });
-    };
-
     if (prevQuery !== nextQuery || prevPage !== nextPage) {
       findImages(nextQuery, nextPage)
         .then(({ hits, totalHits }) => {
@@ -60,7 +56,7 @@ class App extends Component {
             };
           } else {
             this.setState(prevState => ({ imagesSet: [...prevState.imagesSet, ...hits], status: Status.RESOLVED }));
-            // this.makeSmoothScroll();
+            this.makeSmoothScroll();
           };
         })
         .catch(error => {
@@ -87,13 +83,13 @@ class App extends Component {
   };
   
   onFormSubmit = (searchQuery) => {
-    this.setState({ searchQuery });
+    this.setState({ searchQuery, imagesSet: [], page: 1, status: Status.PENDING });
   };
 
-  // makeSmoothScroll = () => {
-  //   const cardHeight = this.galleryElem.firstElementChild.clientHeight;
-  //   window.scrollBy({ top: cardHeight * 1.97, behavior: 'smooth' });
-  // };
+  makeSmoothScroll = () => {
+    const cardHeight = this.galleryElem.firstElementChild.clientHeight;
+    window.scrollBy({ top: cardHeight * 1.97, behavior: 'smooth' });
+  };
 
   toggleModal = (largeImageURL) => {
     this.setState(({ showModal }) => ({
@@ -122,7 +118,7 @@ class App extends Component {
           <ImageGallery
             imagesSet={imagesSet}
             onClick={this.toggleModal}
-            
+            scrollRef={(galleryList) => { this.galleryElem = galleryList }}
           />
           
           {showModal && <Modal
