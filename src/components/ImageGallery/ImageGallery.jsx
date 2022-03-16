@@ -5,14 +5,8 @@ import { GalleryList } from './ImageGallery.styled';
 export default function ImageGallery({ imagesSet, onClick, scrollRef }) {
     return (
         <GalleryList ref={scrollRef}>
-            {imagesSet.map(({ id, webformatURL, largeImageURL, tags }) => (
-                <ImageGalleryItem
-                    key={id}
-                    webformatURL={webformatURL}
-                    largeImageURL={largeImageURL}
-                    alt={tags}
-                    onClick={onClick}
-                />
+            {imagesSet.map(({ id, ...props }) => (
+                <ImageGalleryItem key={id} {...props} onClick={onClick} />
             ))}
         </GalleryList>
     );

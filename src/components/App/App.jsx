@@ -39,21 +39,15 @@ class App extends Component {
     if (prevQuery !== nextQuery || prevPage !== nextPage) {
       findImages(nextQuery, nextPage)
         .then(({ hits, totalHits }) => {
+          if (totalHits === 0) {
+            this.rejectedStatusHandler();
+            this.showIncorrectQuery(nextQuery);
+            return;
+          };
+          
           if (nextPage === 1) {
-            this.setState({ imagesSet: hits, totalImages: totalHits });
-
-            if (totalHits === 0) {
-              this.setState({ status: Status.REJECTED });
-              setTimeout(() => {
-                this.setState({ status: Status.IDLE });
-              }, 3000);
-              return this.showIncorrectQuery(nextQuery);
-            };
-
-            if (totalHits !== 0) {
-              this.setState({ status: Status.RESOLVED });
-              return this.showSearchResult(totalHits);
-            };
+            this.setState({ imagesSet: hits, totalImages: totalHits, status: Status.RESOLVED });
+            this.showSearchResult(totalHits);
           } else {
             this.setState(prevState => ({ imagesSet: [...prevState.imagesSet, ...hits], status: Status.RESOLVED }));
             this.makeSmoothScroll();
@@ -61,13 +55,17 @@ class App extends Component {
         })
         .catch(error => {
           console.log(error);
-          this.setState({ status: Status.REJECTED });
-          setTimeout(() => {
-            this.setState({ status: Status.IDLE });
-          }, 3000);
+          this.rejectedStatusHandler();
           return this.showQueryError(error);
         })
     };
+  };
+
+  rejectedStatusHandler = () => {
+    this.setState({ status: Status.REJECTED });
+    setTimeout(() => {
+      this.setState({ status: Status.IDLE });
+    }, 2500);
   };
 
   showSearchResult = (totalImages) => {
@@ -91,19 +89,19 @@ class App extends Component {
     window.scrollBy({ top: cardHeight * 1.97, behavior: 'smooth' });
   };
 
-  toggleModal = (largeImageURL) => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-      largeImageURL,
-    }));
-  };
-
   onLoadBtnClick = () => {
     const { totalImages, imagesSet } = this.state;
 
     if (totalImages > imagesSet.length) {
       this.setState(prevState => ({ page: prevState.page + 1 }));
     };
+  };
+
+  toggleModal = (largeImageURL) => {
+    this.setState(({ showModal }) => ({
+      showModal: !showModal,
+      largeImageURL,
+    }));
   };
 
   render() {
@@ -114,21 +112,23 @@ class App extends Component {
         <Searchbar onSubmit={this.onFormSubmit} />
         {status === Status.IDLE && <FrontNotification text="Type your image request in searchbar and get an awesome collection of pictures." />}
         {status === Status.PENDING && <Loader />}
-        {status === Status.RESOLVED && <>
-          <ImageGallery
-            imagesSet={imagesSet}
-            onClick={this.toggleModal}
-            scrollRef={(galleryList) => { this.galleryElem = galleryList }}
-          />
-          
-          {showModal && <Modal
-            largeImageURL={largeImageURL}
-            alt={searchQuery}
-            onClose={this.toggleModal}
-          />}
-          
-          {(totalImages > imagesSet.length) && <Button onClick={this.onLoadBtnClick} />}
-        </>}
+        {status === Status.RESOLVED && (
+          <>
+            <ImageGallery
+              imagesSet={imagesSet}
+              onClick={this.toggleModal}
+              scrollRef={(galleryList) => { this.galleryElem = galleryList }}
+            />
+
+            {(totalImages > imagesSet.length) && <Button onClick={this.onLoadBtnClick} />}
+            
+            {showModal && <Modal
+              largeImageURL={largeImageURL}
+              alt={searchQuery}
+              onClose={this.toggleModal}
+            />}
+          </>
+        )}
         {status === Status.REJECTED && <FrontNotification text="Oops! Something went wrong."/>}
         <ToastContainer autoClose={4000} />
       </AppWrapper>
